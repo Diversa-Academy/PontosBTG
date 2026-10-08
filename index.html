@@ -1,0 +1,169 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#030b1a">
+  <meta name="description" content="Simule quantos Pontos BTG uma portabilidade de previdência pode gerar. Uma campanha da Diversa Investimentos sujeita ao regulamento vigente.">
+  <title>Simule seus Pontos BTG | Diversa Investimentos</title>
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='12' fill='%23001138'/%3E%3Cpath d='M17 17h13c14 0 21 7 21 15S44 47 30 47H17V17zm12 9h-2v12h2c8 0 11-2 11-6s-3-6-11-6z' fill='%230086ff'/%3E%3C/svg%3E">
+  <link rel="preload" href="assets/manrope-variable.ttf" as="font" type="font/ttf" crossorigin>
+  <link rel="stylesheet" href="styles.css">
+  <script src="assets/institutions.js" defer></script>
+  <script src="app.js" defer></script>
+</head>
+<body>
+  <a class="skip-link" href="#simulator">Ir para o simulador</a>
+  <header class="site-header">
+    <div class="wrap header-inner">
+      <a class="brand" href="#principal" aria-label="Diversa Investimentos — início"><img src="assets/diversa-branco.svg" alt="Diversa Investimentos" width="170" height="41"></a>
+      <span class="header-middle">PREVIDÊNCIA + PONTOS BTG</span>
+      <a class="header-action" href="#simulator">SIMULAR AGORA</a>
+    </div>
+  </header>
+
+  <main id="principal">
+    <section class="hero" aria-labelledby="hero-title">
+      <div class="wrap hero-inner">
+        <div class="hero-copy">
+          <h1 id="hero-title">Seu patrimônio pode levar você <em>mais longe.</em></h1>
+          <p class="hero-lead">Descubra quantos Pontos BTG a portabilidade da sua previdência pode gerar.</p>
+          <div class="hero-rule"><span>A cada <strong>R$ 100 mil</strong> transferidos</span><span class="rule-line" aria-hidden="true"></span><strong>10.000 pontos</strong></div>
+          <p class="hero-limit">Apenas blocos completos de R$ 100 mil geram pontos. Limite de 300 mil pontos por participante.</p>
+        </div>
+
+        <form class="simulator" id="simulator" novalidate aria-labelledby="simulator-title">
+          <div class="form-heading">
+            <span class="form-overline">SIMULADOR DE PORTABILIDADE</span>
+            <h2 id="simulator-title">Quanto você pode receber?</h2>
+            <p>Preencha os dados e veja a sua estimativa.</p>
+          </div>
+
+          <div class="field amount-field">
+            <div class="label-row"><label for="amount">Valor investido em previdência</label><span>Digite ou arraste</span></div>
+            <div class="money-field"><span aria-hidden="true">R$</span><input id="amount" name="amount" type="text" inputmode="decimal" autocomplete="off" value="100.000,00" placeholder="100.000,00" required aria-describedby="amount-help"></div>
+            <input id="amount-range" class="amount-range" type="range" min="0" max="3000000" step="10000" value="100000" aria-label="Ajustar valor investido em previdência">
+            <div class="range-labels"><span>R$ 0</span><span>R$ 3 milhões ou mais</span></div>
+            <div class="amount-presets" aria-label="Valores rápidos">
+              <button type="button" data-amount="50000">R$ 50 mil</button>
+              <button type="button" data-amount="100000" aria-pressed="true">R$ 100 mil</button>
+              <button type="button" data-amount="500000">R$ 500 mil</button>
+              <button type="button" data-amount="1000000">R$ 1 milhão</button>
+            </div>
+            <small id="amount-help">Você pode informar qualquer valor. A pontuação considera apenas blocos completos de R$ 100 mil.</small>
+          </div>
+
+          <div class="form-section-title">Sobre sua previdência</div>
+          <div class="field institution-field">
+            <label for="institution-trigger">Onde está sua previdência?</label>
+            <button type="button" id="institution-trigger" class="institution-trigger" aria-haspopup="dialog" aria-controls="institution-dialog" aria-describedby="institution-help">
+              <span id="institution-current-logo" class="institution-current-logo" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M3 10h18M5 10V7l7-4 7 4v3M6 10v9m4-9v9m4-9v9m4-9v9M3 21h18"/></svg></span>
+              <span id="institution-current-name">Escolha seu banco ou seguradora</span>
+              <svg class="institution-chevron" viewBox="0 0 24 24" aria-hidden="true"><path d="m7 10 5 5 5-5"/></svg>
+            </button>
+            <input id="institution" name="institution" type="hidden">
+            <small id="institution-help">Mais de 300 marcas disponíveis. Você também pode digitar outra.</small>
+          </div>
+
+          <fieldset class="satisfaction">
+            <legend>Você está satisfeito com o resultado atual?</legend>
+            <label><input type="radio" name="satisfaction" value="Sim, estou satisfeito e gostaria de manter o mesmo fundo" required><span>Sim, gostaria de manter o mesmo fundo</span></label>
+            <label><input type="radio" name="satisfaction" value="Mais ou menos, estou aberto a conhecer outros fundos"><span>Mais ou menos, estou aberto a conhecer outros fundos</span></label>
+            <label><input type="radio" name="satisfaction" value="Não, quero conhecer outros fundos"><span>Não, quero conhecer outros fundos</span></label>
+          </fieldset>
+
+          <div class="form-section-title contact-title">Seus dados de contato</div>
+          <div class="contact-grid">
+            <div class="field"><label for="name">Nome</label><input id="name" name="name" type="text" autocomplete="name" placeholder="Seu nome" required></div>
+            <div class="field"><label for="email">E-mail</label><input id="email" name="email" type="email" autocomplete="email" placeholder="voce@exemplo.com" required></div>
+            <div class="field full"><label for="phone">WhatsApp</label><input id="phone" name="phone" type="tel" inputmode="tel" autocomplete="tel-national" placeholder="(11) 99999-9999" required></div>
+          </div>
+          <p id="form-error" class="form-error" role="alert" hidden></p>
+          <button type="submit" id="simulate-button" class="button button-primary">VER MINHA SIMULAÇÃO</button>
+          <p class="privacy-note">Ao clicar em “Ver minha simulação”, você autoriza a Diversa Investimentos a registrar seu nome, e-mail, WhatsApp, valor investido e respostas sobre sua previdência para entrar em contato sobre esta campanha por WhatsApp ou e-mail. Você pode solicitar a interrupção do contato a qualquer momento.</p>
+        </form>
+      </div>
+      <div class="wrap hero-bottom"><span>PORTABILIDADE DE PREVIDÊNCIA</span><span>Uma decisão para olhar com atenção</span></div>
+    </section>
+
+    <dialog id="institution-dialog" class="institution-dialog" aria-labelledby="institution-dialog-title">
+      <div class="dialog-head">
+        <div><span class="dialog-kicker">SUA PREVIDÊNCIA</span><h2 id="institution-dialog-title">Em qual instituição está?</h2></div>
+        <button type="button" class="dialog-close" id="institution-close" aria-label="Fechar lista">×</button>
+      </div>
+      <div class="institution-search">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.8" cy="10.8" r="6.8"/><path d="m16 16 4.5 4.5"/></svg>
+        <input id="institution-search" type="search" inputmode="search" autocomplete="off" placeholder="Buscar Nubank, Itaú, XP, Ágora..." aria-label="Buscar instituição">
+      </div>
+      <div class="dialog-scroll">
+        <div id="popular-section"><div class="list-heading"><h3>Mais buscadas</h3></div><div id="popular-institutions" class="popular-grid"></div></div>
+        <div class="list-heading all-heading"><h3>Todas as instituições</h3><span id="institution-count"></span></div>
+        <div id="all-institutions" class="all-institutions"></div>
+        <button type="button" id="institution-custom" class="institution-custom" hidden></button>
+      </div>
+      <p class="dialog-footnote">A lista reúne marcas do Open Finance e provedores de previdência. Se não encontrar a sua, use o nome digitado.</p>
+    </dialog>
+
+    <section class="result-section" id="resultado" aria-labelledby="result-title" hidden>
+      <div class="wrap">
+        <div class="result-head"><div><h2 id="result-title">O resultado da sua simulação.</h2><p id="result-intro">Confira a estimativa para o valor informado.</p></div><span class="result-tag">Simulação ilustrativa</span></div>
+        <div class="result-grid">
+          <div class="points-panel">
+            <span class="metric-label">Você pode receber até</span>
+            <strong id="points-number" class="points-number" aria-live="polite">0</strong>
+            <span class="points-unit">PONTOS BTG</span>
+            <p id="points-explanation"></p>
+            <div class="progress-track" aria-hidden="true"><span id="progress-fill"></span></div>
+            <div class="progress-labels"><span>0</span><span>Limite: 300 mil pontos</span></div>
+            <a id="whatsapp-quick" class="button button-quick" href="https://wa.me/5544999371668" target="_blank" rel="noopener noreferrer">FALAR COM UM PROFISSIONAL</a>
+          </div>
+          <div class="calculation-panel">
+            <h3>Como calculamos</h3>
+            <div class="calc-row"><span>Valor informado</span><strong id="result-amount"></strong></div>
+            <div class="calc-row"><span>Regra da simulação</span><strong>10.000 pontos / R$ 100 mil completos</strong></div>
+            <div class="calc-row"><span>Limite da campanha</span><strong>300.000 pontos</strong></div>
+            <p id="eligibility-note" class="eligibility-note"></p>
+          </div>
+        </div>
+
+        <div class="conversion-panel">
+          <div><h2>Converse com quem entende de previdência.</h2><p>Um profissional da Diversa pode conferir sua elegibilidade e apresentar as condições da campanha.</p></div>
+          <a id="whatsapp-cta" class="button button-light" href="https://wa.me/5544999371668" target="_blank" rel="noopener noreferrer">QUERO FALAR COM UM PROFISSIONAL</a>
+        </div>
+      </div>
+    </section>
+
+    <section class="benefits-section" id="como-funciona" aria-labelledby="redemption-title">
+      <div class="wrap redemption">
+        <div class="redemption-head"><h2 id="redemption-title">O que fazer com seus pontos?</h2><p>As opções de resgate dependem dos canais e regras disponíveis.</p></div>
+        <div class="redemption-columns">
+          <div class="benefit-list">
+            <div class="benefit-row"><span class="benefit-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 8h15m-4-4 4 4-4 4M20 16H5m4-4-4 4 4 4"/></svg></span><div><h3>Transferir para programas parceiros</h3><p>Exemplos de programas para conversão, conforme a disponibilidade e as regras aplicáveis:</p><div class="partner-grid" aria-label="Exemplos de programas de pontos"><div class="partner"><img src="assets/brands/livelo.png" alt="Livelo" width="72" height="72"><span>Livelo</span></div><div class="partner"><img src="assets/brands/esfera.png" alt="Esfera" width="72" height="72"><span>Esfera</span></div><div class="partner"><img src="assets/brands/smiles.png" alt="Smiles" width="72" height="72"><span>Smiles</span></div></div></div></div>
+            <div class="benefit-row"><span class="benefit-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 9h18m-6 6h3"/></svg></span><div><h3>Abater a fatura</h3><p>Os pontos também podem reduzir o valor da fatura, quando essa opção estiver disponível.</p></div></div>
+          </div>
+          <div class="travel-panel">
+            <h3>Até onde seus pontos podem levar?</h3>
+            <p>Referências ilustrativas para passagens de ida e volta:</p>
+            <ul class="travel-list">
+              <li><span><img src="assets/flags/br.svg" alt="" width="29" height="21"> Natal</span><strong>50 mil pontos</strong></li>
+              <li><span><img src="assets/flags/fr.svg" alt="" width="29" height="21"> Paris</span><strong>95 mil pontos</strong></li>
+              <li><span><img src="assets/flags/it.svg" alt="" width="29" height="21"> Roma</span><strong>110 mil pontos</strong></li>
+              <li><span><img src="assets/flags/us.svg" alt="" width="29" height="21"> Miami</span><strong>150 mil pontos</strong></li>
+            </ul>
+            <small>Quantidades reais variam por data, disponibilidade, companhia e programa.</small>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <div class="wrap footer-top"><img src="assets/diversa-branco.svg" alt="Diversa Investimentos" width="160" height="38"><a href="https://wa.me/5544999371668?text=Ol%C3%A1%21%20Gostaria%20de%20receber%20o%20regulamento%20vigente%20da%20campanha%20de%20portabilidade%20de%20previd%C3%AAncia%20e%20Pontos%20BTG." target="_blank" rel="noopener noreferrer">Solicitar regulamento vigente</a></div>
+    <div class="wrap disclaimer">
+      <p>A campanha está sujeita às condições, critérios de elegibilidade e período de vigência previstos no regulamento oficial da edição vigente. As regras podem incluir critérios específicos para determinadas modalidades de Previdência. A data de 05/11/2026 foi informada pela Diversa Investimentos para esta página; confirme as condições antes de realizar a transferência.</p>
+      <p>Os exemplos de utilização dos pontos são meramente ilustrativos e não representam garantia de disponibilidade, preço, companhia aérea, trecho ou quantidade de pontos necessária para emissão. A conversão e utilização dos pontos estão sujeitas às regras e condições dos programas e canais disponíveis. Consulte o regulamento completo da campanha e as condições aplicáveis antes de realizar a transferência.</p>
+      <p>Esta simulação considera blocos completos de R$ 100 mil e teto de 300 mil pontos. Valores inferiores a um bloco completo não geram pontos nesta estimativa. A concessão efetiva depende da elegibilidade, conclusão da portabilidade e demais requisitos do regulamento.</p>
+    </div>
+  </footer>
+</body>
+</html>
