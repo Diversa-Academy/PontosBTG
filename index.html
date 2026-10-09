@@ -159,5 +159,55 @@
       <p>Esta simulação considera blocos completos de R$ 10 mil e teto de 300 mil pontos. Valores inferiores a um bloco completo não geram pontos nesta estimativa. A concessão efetiva depende da elegibilidade, conclusão da portabilidade e demais requisitos do regulamento.</p>
     </div>
   </footer>
+  <script>
+  /* Integração da LP com Google Sheets. Mantenha app.js como está. */
+  (() => {
+    // COLE AQUI A URL /exec DA IMPLANTAÇÃO DO SEU APPS SCRIPT:
+    const SHEETS_WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbxuM-W77im4lmH1NUzupbcuvmPjnO-eztYu07iw1tGofUei2qUbidI9Uk_DxMrTIRxs/exec';
+    const form = document.getElementById('simulator');
+    if (!form) return;
+
+    function valorNumerico(texto) {
+      const valor = String(texto || '').replace(/\s/g, '')
+        .replace(/\./g, '').replace(',', '.').replace(/[^\d.]/g, '');
+      return Number(valor);
+    }
+
+    form.addEventListener('submit', (evento) => {
+      // Captura somente envios com campos preenchidos, sem impedir
+      // que o app.js original calcule e exiba a simulação.
+      const nome = form.querySelector('[name="name"]')?.value.trim() || '';
+      const email = form.querySelector('[name="email"]')?.value.trim() || '';
+      const telefone = form.querySelector('[name="phone"]')?.value.trim() || '';
+      const instituicao = form.querySelector('[name="institution"]')?.value.trim() || '';
+      const satisfacao = form.querySelector('[name="satisfaction"]:checked')?.value || '';
+      const valor = valorNumerico(form.querySelector('[name="amount"]')?.value);
+      if (!nome || !/^\S+@\S+\.\S+$/.test(email) || !telefone ||
+          !instituicao || !satisfacao || !(valor > 0)) return;
+      if (!SHEETS_WEB_APP_URL.startsWith('https://script.google.com/macros/s/')) {
+        console.warn('Configure SHEETS_WEB_APP_URL no index.html.');
+        return;
+      }
+      const url = new URL(window.location.href);
+      const dados = new URLSearchParams({
+        name: nome, email, phone: telefone, institution: instituicao,
+        satisfaction: satisfacao, amount_number: String(valor),
+        source: 'LP Previdência BTG', page_url: url.href,
+        website: '', // honeypot
+        utm_source: url.searchParams.get('utm_source') || '',
+        utm_medium: url.searchParams.get('utm_medium') || '',
+        utm_campaign: url.searchParams.get('utm_campaign') || '',
+        utm_content: url.searchParams.get('utm_content') || '',
+        utm_term: url.searchParams.get('utm_term') || ''
+      });
+      // Apps Script exige no-cors a partir de outro domínio.
+      // O navegador não consegue confirmar se a linha foi gravada;
+      // faça um teste de ponta a ponta após publicar.
+      fetch(SHEETS_WEB_APP_URL, {
+        method: 'POST', mode: 'no-cors', body: dados, keepalive: true
+      }).catch(erro => console.error('Falha no envio do lead:', erro));
+    }, true);
+  })();
+  </script>
 </body>
 </html>
