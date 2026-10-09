@@ -8,15 +8,15 @@
   <title>Simule seus Pontos BTG | Diversa Investimentos</title>
   <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='12' fill='%23001138'/%3E%3Cpath d='M17 17h13c14 0 21 7 21 15S44 47 30 47H17V17zm12 9h-2v12h2c8 0 11-2 11-6s-3-6-11-6z' fill='%230086ff'/%3E%3C/svg%3E">
   <link rel="preload" href="assets/manrope-variable.ttf" as="font" type="font/ttf" crossorigin>
-  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="styles.css?v=20261009b">
   <script src="assets/institutions.js" defer></script>
-  <script src="app.js" defer></script>
+  <script src="app.js?v=20261009" defer></script>
 </head>
 <body>
   <a class="skip-link" href="#simulator">Ir para o simulador</a>
   <header class="site-header">
     <div class="wrap header-inner">
-      <a class="brand" href="#principal" aria-label="Diversa Investimentos — início"><img src="assets/diversa-branco.svg" alt="Diversa Investimentos" width="170" height="41"></a>
+      <a class="brand" href="https://diversainvestimentos.com.br" aria-label="Acessar o site da Diversa Investimentos"><img src="assets/diversa-branco.svg" alt="Diversa Investimentos" width="170" height="41"></a>
       <span class="header-middle">PREVIDÊNCIA + PONTOS BTG</span>
       <a class="header-action" href="#simulator">SIMULAR AGORA</a>
     </div>
@@ -26,10 +26,12 @@
     <section class="hero" aria-labelledby="hero-title">
       <div class="wrap hero-inner">
         <div class="hero-copy">
-          <h1 id="hero-title">Seu patrimônio pode levar você <em>mais longe.</em></h1>
-          <p class="hero-lead">Descubra quantos Pontos BTG a portabilidade da sua previdência pode gerar.</p>
-          <div class="hero-rule"><span>A cada <strong>R$ 100 mil</strong> transferidos</span><span class="rule-line" aria-hidden="true"></span><strong>10.000 pontos</strong></div>
-          <p class="hero-limit">Apenas blocos completos de R$ 100 mil geram pontos. Limite de 300 mil pontos por participante.</p>
+          <h1 id="hero-title">Simule quantos <em>Pontos BTG</em> você pode receber ao trazer sua previdência.</h1>
+          <p class="hero-lead">Confira sua estimativa e conheça as possibilidades da campanha.</p>
+          <div class="hero-rule" aria-label="A cada R$ 100 mil transferidos, 10.000 Pontos BTG; limite de 300 mil pontos">
+            <div class="rule-equation"><strong>R$ 100 mil</strong><svg viewBox="0 0 32 24" aria-hidden="true"><path d="M2 12h27m-8-8 8 8-8 8"/></svg><strong>10.000 <span>pontos</span></strong></div>
+            <span class="rule-cap">Até 300 mil pontos na campanha</span>
+          </div>
         </div>
 
         <form class="simulator" id="simulator" novalidate aria-labelledby="simulator-title">
@@ -40,17 +42,10 @@
           </div>
 
           <div class="field amount-field">
-            <div class="label-row"><label for="amount">Valor investido em previdência</label><span>Digite ou arraste</span></div>
-            <div class="money-field"><span aria-hidden="true">R$</span><input id="amount" name="amount" type="text" inputmode="decimal" autocomplete="off" value="100.000,00" placeholder="100.000,00" required aria-describedby="amount-help"></div>
+            <div class="label-row"><label for="amount">Valor investido em previdência</label></div>
+            <div class="money-field"><span aria-hidden="true">R$</span><input id="amount" name="amount" type="text" inputmode="decimal" autocomplete="off" value="100.000,00" placeholder="100.000,00" required></div>
             <input id="amount-range" class="amount-range" type="range" min="0" max="3000000" step="10000" value="100000" aria-label="Ajustar valor investido em previdência">
             <div class="range-labels"><span>R$ 0</span><span>R$ 3 milhões ou mais</span></div>
-            <div class="amount-presets" aria-label="Valores rápidos">
-              <button type="button" data-amount="50000">R$ 50 mil</button>
-              <button type="button" data-amount="100000" aria-pressed="true">R$ 100 mil</button>
-              <button type="button" data-amount="500000">R$ 500 mil</button>
-              <button type="button" data-amount="1000000">R$ 1 milhão</button>
-            </div>
-            <small id="amount-help">Você pode informar qualquer valor. A pontuação considera apenas blocos completos de R$ 100 mil.</small>
           </div>
 
           <div class="form-section-title">Sobre sua previdência</div>
@@ -83,7 +78,6 @@
           <p class="privacy-note">Ao clicar em “Ver minha simulação”, você autoriza a Diversa Investimentos a registrar seu nome, e-mail, WhatsApp, valor investido e respostas sobre sua previdência para entrar em contato sobre esta campanha por WhatsApp ou e-mail. Você pode solicitar a interrupção do contato a qualquer momento.</p>
         </form>
       </div>
-      <div class="wrap hero-bottom"><span>PORTABILIDADE DE PREVIDÊNCIA</span><span>Uma decisão para olhar com atenção</span></div>
     </section>
 
     <dialog id="institution-dialog" class="institution-dialog" aria-labelledby="institution-dialog-title">
@@ -115,12 +109,12 @@
             <p id="points-explanation"></p>
             <div class="progress-track" aria-hidden="true"><span id="progress-fill"></span></div>
             <div class="progress-labels"><span>0</span><span>Limite: 300 mil pontos</span></div>
-            <a id="whatsapp-quick" class="button button-quick" href="https://wa.me/5544999371668" target="_blank" rel="noopener noreferrer">FALAR COM UM PROFISSIONAL</a>
+            <a id="whatsapp-quick" class="button button-quick" href="https://wa.me/5544999371668" target="_blank" rel="noopener noreferrer">Quero portabilizar minha previdência e receber Pontos BTG</a>
           </div>
           <div class="calculation-panel">
             <h3>Como calculamos</h3>
             <div class="calc-row"><span>Valor informado</span><strong id="result-amount"></strong></div>
-            <div class="calc-row"><span>Regra da simulação</span><strong>10.000 pontos / R$ 100 mil completos</strong></div>
+            <div class="calc-row"><span>Regra da simulação</span><strong>1.000 pontos por R$ 10 mil</strong></div>
             <div class="calc-row"><span>Limite da campanha</span><strong>300.000 pontos</strong></div>
             <p id="eligibility-note" class="eligibility-note"></p>
           </div>
@@ -128,7 +122,7 @@
 
         <div class="conversion-panel">
           <div><h2>Converse com quem entende de previdência.</h2><p>Um profissional da Diversa pode conferir sua elegibilidade e apresentar as condições da campanha.</p></div>
-          <a id="whatsapp-cta" class="button button-light" href="https://wa.me/5544999371668" target="_blank" rel="noopener noreferrer">QUERO FALAR COM UM PROFISSIONAL</a>
+          <a id="whatsapp-cta" class="button button-light" href="https://wa.me/5544999371668" target="_blank" rel="noopener noreferrer">Falar com um profissional sobre portabilidade de previdência</a>
         </div>
       </div>
     </section>
@@ -162,7 +156,7 @@
     <div class="wrap disclaimer">
       <p>A campanha está sujeita às condições, critérios de elegibilidade e período de vigência previstos no regulamento oficial da edição vigente. As regras podem incluir critérios específicos para determinadas modalidades de Previdência. A data de 05/11/2026 foi informada pela Diversa Investimentos para esta página; confirme as condições antes de realizar a transferência.</p>
       <p>Os exemplos de utilização dos pontos são meramente ilustrativos e não representam garantia de disponibilidade, preço, companhia aérea, trecho ou quantidade de pontos necessária para emissão. A conversão e utilização dos pontos estão sujeitas às regras e condições dos programas e canais disponíveis. Consulte o regulamento completo da campanha e as condições aplicáveis antes de realizar a transferência.</p>
-      <p>Esta simulação considera blocos completos de R$ 100 mil e teto de 300 mil pontos. Valores inferiores a um bloco completo não geram pontos nesta estimativa. A concessão efetiva depende da elegibilidade, conclusão da portabilidade e demais requisitos do regulamento.</p>
+      <p>Esta simulação considera blocos completos de R$ 10 mil e teto de 300 mil pontos. Valores inferiores a um bloco completo não geram pontos nesta estimativa. A concessão efetiva depende da elegibilidade, conclusão da portabilidade e demais requisitos do regulamento.</p>
     </div>
   </footer>
 </body>
