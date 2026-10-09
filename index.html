@@ -10,7 +10,6 @@
   <link rel="preload" href="assets/manrope-variable.ttf" as="font" type="font/ttf" crossorigin>
   <link rel="stylesheet" href="styles.css?v=20261009b">
   <script src="assets/institutions.js" defer></script>
-  <script src="app.js?v=20261009" defer></script>
 </head>
 <body>
   <a class="skip-link" href="#simulator">Ir para o simulador</a>
@@ -114,7 +113,7 @@
           <div class="calculation-panel">
             <h3>Como calculamos</h3>
             <div class="calc-row"><span>Valor informado</span><strong id="result-amount"></strong></div>
-            <div class="calc-row"><span>Regra da simulação</span><strong>1.000 pontos por R$ 10 mil</strong></div>
+            <div class="calc-row"><span>Regra da simulação</span><strong>10.000 pontos por R$ 100 mil</strong></div>
             <div class="calc-row"><span>Limite da campanha</span><strong>300.000 pontos</strong></div>
             <p id="eligibility-note" class="eligibility-note"></p>
           </div>
@@ -156,58 +155,294 @@
     <div class="wrap disclaimer">
       <p>A campanha está sujeita às condições, critérios de elegibilidade e período de vigência previstos no regulamento oficial da edição vigente. As regras podem incluir critérios específicos para determinadas modalidades de Previdência. A data de 05/11/2026 foi informada pela Diversa Investimentos para esta página; confirme as condições antes de realizar a transferência.</p>
       <p>Os exemplos de utilização dos pontos são meramente ilustrativos e não representam garantia de disponibilidade, preço, companhia aérea, trecho ou quantidade de pontos necessária para emissão. A conversão e utilização dos pontos estão sujeitas às regras e condições dos programas e canais disponíveis. Consulte o regulamento completo da campanha e as condições aplicáveis antes de realizar a transferência.</p>
-      <p>Esta simulação considera blocos completos de R$ 10 mil e teto de 300 mil pontos. Valores inferiores a um bloco completo não geram pontos nesta estimativa. A concessão efetiva depende da elegibilidade, conclusão da portabilidade e demais requisitos do regulamento.</p>
+      <p>Esta simulação considera blocos completos de R$ 100 mil e teto de 300 mil pontos. Valores inferiores a um bloco completo não geram pontos nesta estimativa. A concessão efetiva depende da elegibilidade, conclusão da portabilidade e demais requisitos do regulamento.</p>
     </div>
   </footer>
+
   <script>
-  /* Integração da LP com Google Sheets. Mantenha app.js como está. */
-  (() => {
-    // COLE AQUI A URL /exec DA IMPLANTAÇÃO DO SEU APPS SCRIPT:
-    const SHEETS_WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbxuM-W77im4lmH1NUzupbcuvmPjnO-eztYu07iw1tGofUei2qUbidI9Uk_DxMrTIRxs/exec';
-    const form = document.getElementById('simulator');
-    if (!form) return;
+(() => {
+  'use strict';
 
-    function valorNumerico(texto) {
-      const valor = String(texto || '').replace(/\s/g, '')
-        .replace(/\./g, '').replace(',', '.').replace(/[^\d.]/g, '');
-      return Number(valor);
+  const WHATSAPP = '5544999371668';
+  const SHEETS_WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbxuM-W77im4lmH1NUzupbcuvmPjnO-eztYu07iw1tGofUei2qUbidI9Uk_DxMrTIRxs/exec';
+  const MAX_POINTS = 300000;
+  const BRL = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' });
+  const BRL_INPUT = new Intl.NumberFormat('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  const INTEGER = new Intl.NumberFormat('pt-BR');
+  const form = document.querySelector('#simulator');
+  const amountInput = document.querySelector('#amount');
+  const amountRange = document.querySelector('#amount-range');
+  const presetButtons = [...document.querySelectorAll('.amount-presets button')];
+  const institutionInput = document.querySelector('#institution');
+  const trigger = document.querySelector('#institution-trigger');
+  const currentName = document.querySelector('#institution-current-name');
+  const currentLogo = document.querySelector('#institution-current-logo');
+  const dialog = document.querySelector('#institution-dialog');
+  const search = document.querySelector('#institution-search');
+  const popularSection = document.querySelector('#popular-section');
+  const popularContainer = document.querySelector('#popular-institutions');
+  const allContainer = document.querySelector('#all-institutions');
+  const count = document.querySelector('#institution-count');
+  const custom = document.querySelector('#institution-custom');
+  const formError = document.querySelector('#form-error');
+  const simulateButton = document.querySelector('#simulate-button');
+  const result = document.querySelector('#resultado');
+  let submissionId = crypto.randomUUID();
+  const institutions = Array.isArray(window.INSTITUTION_CATALOG) ? window.INSTITUTION_CATALOG : [];
+
+  const localLogos = new Map([
+    ['Nubank', 'nubank.svg'], ['Itaú', 'itau.svg'], ['Banco XP S.A.', 'xp.svg'],
+    ['Ágora Investimentos', 'agora.svg'], ['Bradesco Pessoa Física', 'bradesco.svg'],
+    ['Banco do Brasil', 'bb.svg'], ['Banco Santander Pessoa Física', 'santander.svg'],
+    ['CAIXA', 'caixa.svg'], ['Sicoob', 'sicoob.svg'], ['Sicredi', 'sicredi.svg'],
+    ['Banco Inter PF', 'inter.svg']
+  ]);
+  const featured = [
+    ['Nubank', 'Nubank'], ['Itaú', 'Itaú'], ['Banco XP S.A.', 'XP'],
+    ['Ágora Investimentos', 'Ágora'], ['Bradesco Pessoa Física', 'Bradesco'],
+    ['Banco Santander Pessoa Física', 'Santander'], ['Banco do Brasil', 'Banco do Brasil'],
+    ['CAIXA', 'Caixa'], ['Banco Inter PF', 'Inter'], ['Sicoob', 'Sicoob'],
+    ['Sicredi', 'Sicredi'], ['Brasilprev', 'Brasilprev']
+  ];
+  const byName = new Map(institutions.map(item => [item.name, item]));
+  const fold = value => value.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLocaleLowerCase('pt-BR').trim();
+
+  function parseBRL(raw) {
+    let value = String(raw).replace(/[^\d,.]/g, '');
+    if (!value) return NaN;
+    if (value.includes(',')) value = value.replace(/\./g, '').replace(',', '.');
+    else if ((value.match(/\./g) || []).length > 1 || /\.\d{3}$/.test(value)) value = value.replace(/\./g, '');
+    return Number(value);
+  }
+
+  function makeLogo(item) {
+    const stack = document.createElement('span');
+    stack.className = 'logo-stack';
+    const fallback = document.createElement('span');
+    fallback.className = 'institution-initials';
+    fallback.textContent = item.name.split(/\s+/).slice(0, 2).map(part => part[0]).join('').toLocaleUpperCase('pt-BR');
+    stack.append(fallback);
+    const source = localLogos.has(item.name)
+      ? `assets/brands/${localLogos.get(item.name)}`
+      : item.logo;
+    if (!source || !/^(assets\/|https:\/\/)/i.test(source)) return stack;
+    const image = document.createElement('img');
+    image.alt = '';
+    image.loading = 'lazy';
+    image.referrerPolicy = 'no-referrer';
+    image.style.visibility = 'hidden';
+    image.onload = () => { fallback.style.visibility = 'hidden'; image.style.visibility = 'visible'; };
+    image.onerror = () => image.remove();
+    image.src = source;
+    stack.append(image);
+    return stack;
+  }
+
+  function choose(item) {
+    institutionInput.value = item.name;
+    currentName.textContent = item.label || item.name;
+    currentLogo.replaceChildren(makeLogo(item));
+    trigger.classList.add('selected');
+    trigger.removeAttribute('aria-invalid');
+    formError.hidden = true;
+    dialog.close();
+    trigger.focus();
+  }
+
+  function makeInstitutionButton(item, label = item.name, popular = false) {
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.className = popular ? 'popular-option' : 'institution-option';
+    button.append(makeLogo(item));
+    const text = document.createElement('span');
+    text.textContent = label;
+    button.append(text);
+    button.addEventListener('click', () => choose({ ...item, label }));
+    return button;
+  }
+
+  function renderFeatured() {
+    const fragment = document.createDocumentFragment();
+    for (const [name, label] of featured) {
+      const item = byName.get(name);
+      if (item) fragment.append(makeInstitutionButton(item, label, true));
     }
+    popularContainer.replaceChildren(fragment);
+  }
 
-    form.addEventListener('submit', (evento) => {
-      // Captura somente envios com campos preenchidos, sem impedir
-      // que o app.js original calcule e exiba a simulação.
-      const nome = form.querySelector('[name="name"]')?.value.trim() || '';
-      const email = form.querySelector('[name="email"]')?.value.trim() || '';
-      const telefone = form.querySelector('[name="phone"]')?.value.trim() || '';
-      const instituicao = form.querySelector('[name="institution"]')?.value.trim() || '';
-      const satisfacao = form.querySelector('[name="satisfaction"]:checked')?.value || '';
-      const valor = valorNumerico(form.querySelector('[name="amount"]')?.value);
-      if (!nome || !/^\S+@\S+\.\S+$/.test(email) || !telefone ||
-          !instituicao || !satisfacao || !(valor > 0)) return;
-      if (!SHEETS_WEB_APP_URL.startsWith('https://script.google.com/macros/s/')) {
-        console.warn('Configure SHEETS_WEB_APP_URL no index.html.');
-        return;
-      }
-      const url = new URL(window.location.href);
-      const dados = new URLSearchParams({
-        name: nome, email, phone: telefone, institution: instituicao,
-        satisfaction: satisfacao, amount_number: String(valor),
-        source: 'LP Previdência BTG', page_url: url.href,
-        website: '', // honeypot
-        utm_source: url.searchParams.get('utm_source') || '',
-        utm_medium: url.searchParams.get('utm_medium') || '',
-        utm_campaign: url.searchParams.get('utm_campaign') || '',
-        utm_content: url.searchParams.get('utm_content') || '',
-        utm_term: url.searchParams.get('utm_term') || ''
+  function renderInstitutions() {
+    const query = fold(search.value);
+    const matches = query
+      ? institutions.filter(item => fold(item.name).includes(query))
+      : institutions;
+    const fragment = document.createDocumentFragment();
+    for (const item of matches) fragment.append(makeInstitutionButton(item));
+    allContainer.replaceChildren(fragment);
+    popularSection.hidden = Boolean(query);
+    count.textContent = `${matches.length} de ${institutions.length}`;
+    custom.hidden = !query || matches.some(item => fold(item.name) === query);
+    if (!custom.hidden) custom.textContent = `Não encontrou? Usar “${search.value.trim()}”`;
+    if (!matches.length) {
+      const empty = document.createElement('p');
+      empty.className = 'institution-empty';
+      empty.textContent = 'Nenhuma marca com esse nome na lista.';
+      allContainer.append(empty);
+    }
+  }
+
+  trigger.addEventListener('click', () => {
+    search.value = '';
+    renderInstitutions();
+    dialog.showModal();
+    search.focus();
+  });
+  document.querySelector('#institution-close').addEventListener('click', () => dialog.close());
+  dialog.addEventListener('click', event => { if (event.target === dialog) dialog.close(); });
+  search.addEventListener('input', renderInstitutions);
+  custom.addEventListener('click', () => {
+    const name = search.value.trim();
+    if (name) choose({ name, logo: '' });
+  });
+  renderFeatured();
+  renderInstitutions();
+
+  function syncAmountControls() {
+    const amount = parseBRL(amountInput.value);
+    const clamped = Number.isFinite(amount) ? Math.min(3000000, Math.max(0, amount)) : 0;
+    amountRange.value = String(Math.round(clamped / 10000) * 10000);
+    amountRange.style.setProperty('--range-progress', `${clamped / 3000000 * 100}%`);
+    presetButtons.forEach(button => button.setAttribute('aria-pressed', String(Number(button.dataset.amount) === amount)));
+  }
+  amountInput.addEventListener('input', syncAmountControls);
+  amountRange.addEventListener('input', () => {
+    amountInput.value = BRL_INPUT.format(Number(amountRange.value));
+    syncAmountControls();
+    amountInput.removeAttribute('aria-invalid');
+    formError.hidden = true;
+  });
+  presetButtons.forEach(button => button.addEventListener('click', () => {
+    amountInput.value = BRL_INPUT.format(Number(button.dataset.amount));
+    syncAmountControls();
+    amountInput.removeAttribute('aria-invalid');
+    formError.hidden = true;
+  }));
+  amountInput.addEventListener('blur', () => {
+    const amount = parseBRL(amountInput.value);
+    if (Number.isFinite(amount) && amount >= 0) amountInput.value = BRL_INPUT.format(amount);
+    syncAmountControls();
+  });
+  amountInput.addEventListener('focus', () => { if (amountInput.value) amountInput.select(); });
+  syncAmountControls();
+  form.querySelectorAll('input').forEach(input => input.addEventListener('input', () => {
+    input.removeAttribute('aria-invalid');
+    formError.hidden = true;
+  }));
+
+  function showError(input, message) {
+    formError.textContent = message;
+    formError.hidden = false;
+    input.setAttribute('aria-invalid', 'true');
+    input.focus();
+  }
+
+  form.addEventListener('submit', async event => {
+    event.preventDefault();
+    const amount = parseBRL(amountInput.value);
+    const institution = institutionInput.value.trim();
+    const satisfaction = form.querySelector('input[name="satisfaction"]:checked');
+    const name = form.elements.name.value.trim();
+    const email = form.elements.email.value.trim();
+    const phone = form.elements.phone.value.replace(/\D/g, '');
+
+    if (!Number.isFinite(amount) || amount <= 0) return showError(amountInput, 'Informe um valor de previdência maior que zero.');
+    if (!institution) return showError(trigger, 'Selecione onde está sua previdência.');
+    if (!satisfaction) return showError(form.querySelector('input[name="satisfaction"]'), 'Selecione como você avalia o resultado da sua previdência.');
+    if (name.length < 2) return showError(form.elements.name, 'Informe seu nome para continuar.');
+    if (!form.elements.email.validity.valid || !email) return showError(form.elements.email, 'Informe um e-mail válido.');
+    if (phone.length < 10 || phone.length > 11) return showError(form.elements.phone, 'Informe um WhatsApp com DDD.');
+
+    const blocks = Math.floor(amount / 100000);
+    let points = Math.min(MAX_POINTS, blocks * 10000);
+    result.hidden = true;
+    simulateButton.disabled = true;
+    simulateButton.textContent = 'ENVIANDO DADOS...';
+    form.setAttribute('aria-busy', 'true');
+    formError.hidden = true;
+    try {
+      // Google Apps Script em outro domínio: no-cors permite POST, mas não
+      // permite ler a resposta. Portanto não garante gravação na planilha.
+      const currentUrl = new URL(window.location.href);
+      const payload = new URLSearchParams({
+        submissionId,
+        name,
+        email,
+        phone,
+        institution,
+        satisfaction: satisfaction.value,
+        amount_number: String(amount),
+        source: 'LP Previdência BTG',
+        page_url: currentUrl.href,
+        website: '',
+        utm_source: currentUrl.searchParams.get('utm_source') || '',
+        utm_medium: currentUrl.searchParams.get('utm_medium') || '',
+        utm_campaign: currentUrl.searchParams.get('utm_campaign') || '',
+        utm_content: currentUrl.searchParams.get('utm_content') || '',
+        utm_term: currentUrl.searchParams.get('utm_term') || '',
+        consent: 'true',
+        consentVersion: '2026-10-08'
       });
-      // Apps Script exige no-cors a partir de outro domínio.
-      // O navegador não consegue confirmar se a linha foi gravada;
-      // faça um teste de ponta a ponta após publicar.
-      fetch(SHEETS_WEB_APP_URL, {
-        method: 'POST', mode: 'no-cors', body: dados, keepalive: true
-      }).catch(erro => console.error('Falha no envio do lead:', erro));
-    }, true);
-  })();
+      await fetch(SHEETS_WEB_APP_URL, {
+        method: 'POST',
+        mode: 'no-cors',
+        body: payload,
+        keepalive: true
+      });
+      // A requisição foi despachada; não é confirmação de salvamento.
+      submissionId = crypto.randomUUID();
+    } catch (error) {
+      console.error('Erro ao enviar formulário ao Apps Script:', error);
+      formError.textContent = 'Não foi possível conectar para enviar seus dados. Confira sua internet e tente novamente.';
+      formError.hidden = false;
+      formError.scrollIntoView({ block: 'center' });
+      return;
+    } finally {
+      simulateButton.disabled = false;
+      simulateButton.textContent = 'VER MINHA SIMULAÇÃO';
+      form.removeAttribute('aria-busy');
+    }
+    document.querySelector('#points-number').textContent = INTEGER.format(points);
+    document.querySelector('#result-amount').textContent = BRL.format(amount);
+    document.querySelector('#progress-fill').style.transform = `scaleX(${Math.min(1, points / MAX_POINTS)})`;
+    document.querySelector('#result-intro').textContent = `Estimativa para ${BRL.format(amount)} em previdência na ${institution}.`;
+    document.querySelector('#points-explanation').textContent = amount < 100000
+      ? 'A campanha considera blocos completos de R$ 100 mil. Para esse valor, a estimativa é de 0 pontos.'
+      : amount >= 3000000
+        ? 'Você atingiu o teto ilustrativo de 300 mil pontos por participante.'
+        : `Estimativa para ${INTEGER.format(blocks)} bloco${blocks === 1 ? '' : 's'} completo${blocks === 1 ? '' : 's'} de R$ 100 mil.`;
+    document.querySelector('#eligibility-note').textContent = 'A pontuação é uma estimativa. A concessão depende da edição vigente da campanha, da elegibilidade da portabilidade e das demais condições do regulamento.';
+
+    const message = [
+      'Olá! Quero falar com um profissional da Diversa sobre a campanha de portabilidade de previdência e Pontos BTG.',
+      `Nome: ${name}`,
+      `E-mail: ${email}`,
+      `Meu WhatsApp: ${form.elements.phone.value.trim()}`,
+      `Valor em previdência: ${BRL.format(amount)}`,
+      `Instituição atual: ${institution}`,
+      `Satisfação com o fundo: ${satisfaction.value}`,
+      `Simulação ilustrativa: ${INTEGER.format(points)} Pontos BTG.`,
+      'Gostaria de confirmar minha elegibilidade e receber o regulamento vigente.'
+    ].join('\n');
+    const whatsappLink = `https://wa.me/${WHATSAPP}?text=${encodeURIComponent(message)}`;
+    document.querySelector('#whatsapp-cta').href = whatsappLink;
+    document.querySelector('#whatsapp-quick').href = whatsappLink;
+
+    result.hidden = false;
+    result.scrollIntoView({ behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'instant' : 'smooth', block: 'start' });
+    const resultTitle = document.querySelector('#result-title');
+    resultTitle.setAttribute('tabindex', '-1');
+    setTimeout(() => resultTitle.focus({ preventScroll: true }), 400);
+  });
+})();
   </script>
 </body>
 </html>
