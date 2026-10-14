@@ -10,6 +10,22 @@
   <link rel="preload" href="assets/manrope-variable.ttf" as="font" type="font/ttf" crossorigin>
   <link rel="stylesheet" href="styles.css?v=20261009b">
   <script src="assets/institutions.js" defer></script>
+  <style>
+    /* Interações robustas nos navegadores internos de Instagram/Facebook */
+    .institution-mobile-backdrop:not([hidden]) { position:fixed; inset:0; background:rgba(0,8,26,.72); z-index:9998; }
+    .institution-dialog.dialog-mobile-open {
+      display:block !important; position:fixed !important; z-index:9999 !important;
+      top:50% !important; left:50% !important; transform:translate(-50%,-50%) !important;
+      margin:0 !important; width:min(94vw,620px) !important;
+      max-height:min(85dvh,760px) !important; overflow:auto !important;
+      visibility:visible !important; pointer-events:auto !important;
+      box-sizing:border-box; overscroll-behavior:contain;
+    }
+    body.institution-dialog-active { overflow:hidden !important; }
+    #amount-range { touch-action:none; pointer-events:auto; }
+    .institution-trigger, .institution-option, .popular-option, .dialog-close, .institution-custom { touch-action:manipulation; }
+  </style>
+
 </head>
 <body>
   <a class="skip-link" href="#simulator">Ir para o simulador</a>
@@ -187,7 +203,19 @@ document.addEventListener('DOMContentLoaded', () => {
   const formError = document.querySelector('#form-error');
   const simulateButton = document.querySelector('#simulate-button');
   const result = document.querySelector('#resultado');
-  let submissionId = crypto.randomUUID();
+  // crypto.randomUUID não está disponível em muitos navegadores internos (Instagram/WebView).
+  function newSubmissionId() {
+    if (window.crypto && typeof window.crypto.randomUUID === 'function') return window.crypto.randomUUID();
+    if (window.crypto && typeof window.crypto.getRandomValues === 'function') {
+      const a = new Uint8Array(16);
+      window.crypto.getRandomValues(a);
+      a[6] = (a[6] & 15) | 64;
+      a[8] = (a[8] & 63) | 128;
+      return [...a].map((n, i) => ([4, 6, 8, 10].includes(i) ? '-' : '') + n.toString(16).padStart(2, '0')).join('');
+    }
+    return 'lead-' + Date.now() + '-' + Math.random().toString(36).slice(2);
+  }
+  let submissionId = newSubmissionId();
   const institutions = Array.isArray(window.INSTITUTION_CATALOG) ? window.INSTITUTION_CATALOG : [];
 
   const localLogos = new Map([
@@ -245,7 +273,7 @@ document.addEventListener('DOMContentLoaded', () => {
     trigger.classList.add('selected');
     trigger.removeAttribute('aria-invalid');
     formError.hidden = true;
-    dialog.close();
+    closeInstitutionDialog();
     trigger.focus();
   }
 
@@ -290,14 +318,35 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
-  trigger.addEventListener('click', () => {
+  // Overlay independente do <dialog>. Evita falhas de showModal e toques no WebView do Instagram.
+  const backdrop = document.createElement('div');
+  backdrop.className = 'institution-mobile-backdrop';
+  backdrop.hidden = true;
+  document.body.append(backdrop);
+  let previousFocus = null;
+  function openInstitutionDialog() {
+    previousFocus = document.activeElement;
     search.value = '';
     renderInstitutions();
-    dialog.showModal();
+    backdrop.hidden = false;
+    dialog.setAttribute('open', '');
+    dialog.classList.add('dialog-mobile-open');
+    document.body.classList.add('institution-dialog-active');
     search.focus();
+  }
+  function closeInstitutionDialog() {
+    dialog.removeAttribute('open');
+    dialog.classList.remove('dialog-mobile-open');
+    backdrop.hidden = true;
+    document.body.classList.remove('institution-dialog-active');
+    if (previousFocus && typeof previousFocus.focus === 'function') previousFocus.focus();
+  }
+  trigger.addEventListener('click', openInstitutionDialog);
+  document.querySelector('#institution-close').addEventListener('click', closeInstitutionDialog);
+  backdrop.addEventListener('click', closeInstitutionDialog);
+  document.addEventListener('keydown', event => {
+    if (event.key === 'Escape' && dialog.hasAttribute('open')) closeInstitutionDialog();
   });
-  document.querySelector('#institution-close').addEventListener('click', () => dialog.close());
-  dialog.addEventListener('click', event => { if (event.target === dialog) dialog.close(); });
   search.addEventListener('input', renderInstitutions);
   custom.addEventListener('click', () => {
     const name = search.value.trim();
@@ -398,7 +447,7 @@ document.addEventListener('DOMContentLoaded', () => {
         keepalive: true
       });
       // A requisição foi despachada; não é confirmação de salvamento.
-      submissionId = crypto.randomUUID();
+      submissionId = newSubmissionId();
     } catch (error) {
       console.error('Erro ao enviar formulário ao Apps Script:', error);
       formError.textContent = 'Não foi possível conectar para enviar seus dados. Confira sua internet e tente novamente.';
